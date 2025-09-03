@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PWA Blog App</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#3b82f6" />
+    <script src="https://cdn.tailwindcss.com/3.4.0"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- App Container -->
+    <div id="app" class="max-w-4xl mx-auto px-4 py-8">
+      <!-- Header -->
+      <header class="mb-8">
+        <div
+          class="flex items-center justify-between bg-white rounded-lg shadow-sm p-6"
+        >
+          <h1 class="text-3xl font-bold text-gray-900">PWA Blog</h1>
+          <div id="userInfo" class="flex items-center space-x-4 hidden">
+            <span id="welcomeText" class="text-gray-600"></span>
+            <button
+              id="logoutBtn"
+              class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Connection Status -->
+      <div id="connectionStatus" class="mb-4 hidden">
+        <div
+          class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded"
+        >
+          <p class="font-medium">
+            ⚠️ You are offline. Some features may be limited.
+          </p>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginForm" class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-semibold mb-6 text-center">
+          Login to Continue
+        </h2>
+        <form id="loginFormElement" class="space-y-4">
+          <div>
+            <label
+              for="username"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Username</label
+            >
+            <input
+              type="text"
+              id="username"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <div>
+            <label
+              for="password"
+              class="block text-sm font-medium text-gray-700 mb-2"
+              >Password</label
+            >
+            <input
+              type="password"
+              id="password"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors"
+          >
+            Login
+          </button>
+        </form>
+        <div class="mt-4 text-sm text-gray-600">
+          <p>Test credentials:</p>
+          <p>admin/admin, john/passwordjohn, jane/passwordjane</p>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div id="mainContent" class="hidden">
+        <!-- Add Post Form -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <h2 class="text-xl font-semibold mb-4">Create New Post</h2>
+          <form id="addPostForm" class="space-y-4">
+            <div>
+              <label
+                for="postTitle"
+                class="block text-sm font-medium text-gray-700 mb-2"
+                >Title</label
+              >
+              <input
+                type="text"
+                id="postTitle"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            <div>
+              <label
+                for="postContent"
+                class="block text-sm font-medium text-gray-700 mb-2"
+                >Content</label
+              >
+              <textarea
+                id="postContent"
+                rows="4"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              id="addPostBtn"
+              class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md transition-colors"
+            >
+              Add Post
+            </button>
+          </form>
+        </div>
+
+        <!-- Posts Container -->
+        <div id="postsContainer" class="space-y-6">
+          <!-- Posts will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div id="loadingSpinner" class="text-center py-8 hidden">
+        <div
+          class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
+        ></div>
+        <p class="mt-2 text-gray-600">Loading...</p>
+      </div>
+    </div>
+
+    <!-- PWA Install Prompt -->
+    <div
+      id="installPrompt"
+      class="fixed bottom-4 right-4 bg-blue-500 text-white p-4 rounded-lg shadow-lg hidden z-50"
+    >
+      <div class="flex items-start space-x-3">
+        <div class="flex-shrink-0 mt-1">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"
+            ></path>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-medium mb-2">Install PWA Blog App</p>
+          <p class="text-xs opacity-90 mb-3">
+            Get the app for better experience and offline access!
+          </p>
+          <div class="flex space-x-2">
+            <button
+              id="installBtn"
+              class="bg-white text-blue-500 px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 transition-colors"
+            >
+              Install
+            </button>
+            <button
+              id="dismissBtn"
+              class="border border-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+            >
+              Later
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Status aplikasi
+      // currentUser akan menyimpan data user yang saat ini login
+      // posts akan menyimpan data post yang didapatkan dari API
+      // comments akan menyimpan data komentar yang didapatkan dari API
+      // users akan menyimpan data semua user yang didapatkan dari API
+      // isOnline akan menyimpan status koneksi internet
+      // deferredPrompt akan menyimpan data install prompt yang muncul saat pertama kali user membuka aplikasi
+      let currentUser = null;
+      let posts = [];
+      let comments = [];
+      let users = [];
+      let isOnline = navigator.onLine;
+      let deferredPrompt;
+
+      // URL basis API
+      // URL ini digunakan untuk mengakses API yang dibuat
+      const API_BASE = "http://localhost:3000";
+
+      // Element DOM
+      // loginForm akan digunakan untuk menampilkan form login
+      // mainContent akan digunakan untuk menampilkan konten utama aplikasi
+      // userInfo akan digunakan untuk menampilkan informasi user yang login
+      // welcomeText akan digunakan untuk menampilkan teks selamat datang
+      // connectionStatus akan digunakan untuk menampilkan status koneksi internet
+      // postsContainer akan digunakan untuk menampilkan daftar post
+      // loadingSpinner akan digunakan untuk menampilkan loading spinner saat data sedang di-load
+      const loginForm = document.getElementById("loginForm");
+      const mainContent = document.getElementById("mainContent");
+      const userInfo = document.getElementById("userInfo");
+      const welcomeText = document.getElementById("welcomeText");
+      const connectionStatus = document.getElementById("connectionStatus");
+      const postsContainer = document.getElementById("postsContainer");
+      const loadingSpinner = document.getElementById("loadingSpinner");
+
+      // Inisialisasi Aplikasi
+      // Saat halaman selesai dimuat, maka akan dijalankan fungsi registerServiceWorker()
+      // untuk mendaftarkan service worker, setupPWAInstall() untuk mengatur install prompt,
+      // setupEventListeners() untuk mengatur event listener, checkAuthStatus() untuk memeriksa
+      // status autentikasi user, dan updateConnectionStatus() untuk memperbarui status koneksi internet
+      document.addEventListener("DOMContentLoaded", async () => {
+        await registerServiceWorker();
+        setupPWAInstall();
+        setupEventListeners();
+        checkAuthStatus();
+        updateConnectionStatus();
+      });
+
+      /**
+       * Fungsi untuk mendaftarkan service worker
+       * Service worker adalah script yang berjalan di background dan berfungsi
+       * untuk menghandle request jaringan dan cache data.
+       * Jika service worker berhasil didaftarkan, maka akan menampilkan pesan
+       * "SW registered:" di console.
+       * Jika gagal, maka akan menampilkan pesan "SW registration failed:" di console.
+       */
+      async function registerServiceWorker() {
+        // Cek apakah service worker tersedia di browser
+        if ("serviceWorker" in navigator) {
+          try {
+            // Mendaftarkan service worker
+            const registration = await navigator.serviceWorker.register(
+              "/sw.js"
+            );
+            // Menampilkan pesan berhasil jika service worker terdaftar
+            console.log("SW registered:", registration);
+          } catch (error) {
+            // Menampilkan pesan gagal jika terjadi error
+            console.log("SW registration failed:", error);
+          }
+        }
+      }
+
+      // Pengaturan PWA Install
+      /**
+       * Fungsi untuk mengatur install prompt PWA
+       * Fungsi ini akan menampilkan install prompt jika user membuka halaman
+       * dan belum pernah menginstall PWA sebelumnya
+       */
+      function setupPWAInstall() {
+        /**
+         * Event listener untuk menghandle event beforeinstallprompt
+         * yang terjadi saat user membuka halaman dan belum pernah menginstall PWA sebelumnya
+         * @param {Event} e
+         */
+        window.addEventListener("beforeinstallprompt", (e) => {
+          // Mencegah default behavior event beforeinstallprompt
+          e.preventDefault();
+
+          // Menyimpan event beforeinstallprompt di variable deferredPrompt
+          deferredPrompt = e;
+
+          // Menampilkan install prompt
+          document.getElementById("installPrompt").classList.remove("hidden");
+        });
+
+        /**
+         * Event listener untuk menghandle event click pada tombol install
+         * @param {Event} e
+         */
+        document
+          .getElementById("installBtn")
+          .addEventListener("click", async (e) => {
+            // Jika user mengklik tombol install maka akan menampilkan prompt install
+            if (deferredPrompt) {
+              // Menampilkan prompt install
+              deferredPrompt.prompt();
+
+              // Menyimpan hasil prompt install di variable result
+              const result = await deferredPrompt.userChoice;
+
+              // Menampilkan hasil prompt install di console
+              console.log("Install result:", result);
+
+              // Menghapus event beforeinstallprompt yang tersimpan di variable deferredPrompt
+              deferredPrompt = null;
+
+              // Menyembunyikan install prompt
+              document.getElementById("installPrompt").classList.add("hidden");
+            }
+          });
+
+        /**
+         * Event listener untuk menghandle event click pada tombol dismiss
+         * @param {Event} e
+         */
+        document.getElementById("dismissBtn").addEventListener("click", (e) => {
+          // Menyembunyikan install prompt
+          document.getElementById("installPrompt").classList.add("hidden");
+        });
+      }
+
+      // Pengaturan Event Listeners
+      /**
+       * Fungsi untuk mengatur event listeners
+       * Event listener adalah fungsi yang akan dijalankan saat terjadi event tertentu
+       * Contoh event yang umum digunakan adalah click, submit, online, offline
+       */
+      function setupEventListeners() {
+        // Form Login
+        /**
+         * Event listener untuk menghandle event submit pada form login
+         * @param {Event} e
+         */
+        document
+          .getElementById("loginFormElement")
+          .addEventListener("submit", handleLogin);
+
+        // Tombol Logout
+        /**
+         * Event listener untuk menghandle event click pada tombol logout
+         * @param {Event} e
+         */
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", handleLogout);
+
+        // Form Tambah Post
+        /**
+         * Event listener untuk menghandle event submit pada form tambah post
+         * @param {Event} e
+         */
+        document
+          .getElementById("addPostForm")
+          .addEventListener("submit", handleAddPost);
+
+        // Status Koneksi
+        /**
+         * Event listener untuk menghandle event online yang terjadi saat
+         * koneksi internet tersedia
+         */
+        window.addEventListener("online", () => {
+          isOnline = true;
+          updateConnectionStatus();
+          syncOfflineData();
+        });
+
+        /**
+         * Event listener untuk menghandle event offline yang terjadi saat
+         * koneksi internet tidak tersedia
+         */
+        window.addEventListener("offline", () => {
+          isOnline = false;
+          updateConnectionStatus();
+        });
+      }
+
+      // Fungsi untuk memeriksa status autentikasi
+      // Jika user sudah login, maka akan menampilkan main content
+      // Jika user belum login, maka akan menampilkan form login
+      function checkAuthStatus() {
+        const savedUser = localStorage.getItem("currentUser");
+        if (savedUser) {
+          currentUser = JSON.parse(savedUser);
+          showMainContent();
+        } else {
+          showLoginForm();
+        }
+      }
+
+      // Fungsi untuk menghandle event submit pada form login
+      // Fungsi ini akan memeriksa apakah username dan password yang diinputkan
+      // cocok dengan data user yang tersimpan di API
+      // Jika cocok, maka akan menampilkan main content dan menyimpan data user
+      // di localStorage
+      // Jika tidak cocok, maka akan menampilkan pesan error
+      async function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        try {
+          showLoading(true);
+          const response = await fetchWithCache(`${API_BASE}/users`);
+          users = response;
+
+          const user = users.find(
+            (u) => u.username === username && u.password === password
+          );
+          if (user) {
+            currentUser = user;
+            localStorage.setItem("currentUser", JSON.stringify(user));
+            showMainContent();
+          } else {
+            alert("Kredensial tidak valid!");
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          alert("Login gagal. Silakan coba lagi.");
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Fungsi untuk menghandle event click pada tombol logout
+      // Fungsi ini akan menghapus data user yang tersimpan di localStorage
+      // dan menampilkan form login
+      function handleLogout() {
+        currentUser = null;
+        localStorage.removeItem("currentUser");
+        showLoginForm();
+      }
+
+      // Fungsi untuk menghandle event submit pada form tambah post
+      // Fungsi ini akan memeriksa apakah user sudah login dan memiliki koneksi internet
+      // Jika user belum login atau tidak memiliki koneksi internet,
+      // maka akan menampilkan pesan error
+      // Jika user sudah login dan memiliki koneksi internet,
+      // maka akan mengirimkan data post ke API dan menampilkan pesan sukses
+      async function handleAddPost(e) {
+        e.preventDefault();
+        const title = document.getElementById("postTitle").value;
+        const content = document.getElementById("postContent").value;
+
+        if (!isOnline) {
+          alert("Tidak dapat menambahkan post saat offline");
+          return;
+        }
+
+        try {
+          showLoading(true);
+          const newPost = {
+            id: generateId(),
+            title,
+            content,
+            userId: currentUser.id,
+          };
+
+          const response = await fetch(`${API_BASE}/posts`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newPost),
+          });
+
+          if (response.ok) {
+            document.getElementById("addPostForm").reset();
+            loadPosts();
+            alert("Post berhasil ditambahkan!");
+          } else {
+            throw new Error("Gagal menambahkan post");
+          }
+        } catch (error) {
+          console.error("Add post error:", error);
+          alert("Gagal menambahkan post. Silakan coba lagi.");
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Menambahkan Komentar
+      // Fungsi ini akan menambahkan komentar pada post yang dipilih
+      // Fungsi ini akan memeriksa apakah user sudah login dan memiliki koneksi internet
+      // Jika user belum login atau tidak memiliki koneksi internet,
+      // maka akan menampilkan pesan error
+      // Jika user sudah login dan memiliki koneksi internet,
+      // maka akan mengirimkan data komentar ke API dan menampilkan pesan sukses
+      async function handleAddComment(postId, commentText) {
+        if (!isOnline) {
+          alert("Tidak dapat menambahkan komentar saat offline");
+          return;
+        }
+
+        try {
+          const newComment = {
+            id: generateId(),
+            body: commentText,
+            postId: postId,
+          };
+
+          const response = await fetch(`${API_BASE}/comments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newComment),
+          });
+
+          if (response.ok) {
+            loadPosts();
+            alert("Komentar berhasil ditambahkan!");
+          } else {
+            throw new Error("Gagal menambahkan komentar");
+          }
+        } catch (error) {
+          console.error("Tambah komentar error:", error);
+          alert("Gagal menambahkan komentar. Silakan coba lagi.");
+        }
+      }
+
+      // Memuat Postingan dan Komentar
+      // Fungsi ini akan memuat postingan dan komentar dari API
+      // Fungsi ini akan memeriksa apakah user sudah login dan memiliki koneksi internet
+      // Jika user belum login atau tidak memiliki koneksi internet,
+      // maka akan menampilkan pesan error
+      // Jika user sudah login dan memiliki koneksi internet,
+      // maka akan memuat postingan dan komentar dari API dan menampilkan pesan sukses
+      async function loadPosts() {
+        try {
+          showLoading(true);
+          const [postsResponse, commentsResponse, usersResponse] =
+            await Promise.all([
+              fetchWithCache(`${API_BASE}/posts`),
+              fetchWithCache(`${API_BASE}/comments`),
+              fetchWithCache(`${API_BASE}/users`),
+            ]);
+
+          posts = postsResponse;
+          comments = commentsResponse;
+          users = usersResponse;
+
+          renderPosts();
+        } catch (error) {
+          console.error("Load posts error:", error);
+          // Try to load from cache
+          loadFromCache();
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Fetch dengan Cache Fallback
+      // Fungsi ini akan melakukan fetch data dari API dan jika gagal,
+      // maka akan mencoba untuk mengambil data dari cache di localStorage
+      async function fetchWithCache(url) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+
+          // Cache data di localStorage untuk penggunaan offline
+          localStorage.setItem(`cache_${url}`, JSON.stringify(data));
+
+          return data;
+        } catch (error) {
+          // Coba ambil dari cache di localStorage
+          const cached = localStorage.getItem(`cache_${url}`);
+          if (cached) {
+            return JSON.parse(cached);
+          }
+          throw error;
+        }
+      }
+
+      // Memuat dari Cache
+      // Fungsi ini akan memuat data dari cache di localStorage
+      // Jika data tidak tersedia di cache, maka akan menampilkan pesan error
+      function loadFromCache() {
+        try {
+          const cachedPosts = localStorage.getItem(`cache_${API_BASE}/posts`);
+          const cachedComments = localStorage.getItem(
+            `cache_${API_BASE}/comments`
+          );
+          const cachedUsers = localStorage.getItem(`cache_${API_BASE}/users`);
+
+          if (cachedPosts) posts = JSON.parse(cachedPosts);
+          if (cachedComments) comments = JSON.parse(cachedComments);
+          if (cachedUsers) users = JSON.parse(cachedUsers);
+
+          renderPosts();
+        } catch (error) {
+          console.error("Cache load error:", error);
+        }
+      }
+
+      // Render Posts
+      function renderPosts() {
+        postsContainer.innerHTML = "";
+
+        posts.forEach((post) => {
+          const postComments = comments.filter((c) => c.postId === post.id);
+          const postUser = users.find((u) => u.id === post.userId);
+
+          const postElement = document.createElement("div");
+          postElement.className = "bg-white rounded-lg shadow-sm p-6";
+          postElement.innerHTML = `
+                    <div class="mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">${escapeHtml(
+                          post.title
+                        )}</h3>
+                        <p class="text-gray-600 mb-2">${escapeHtml(
+                          post.content
+                        )}</p>
+                        <p class="text-sm text-gray-500">By: ${escapeHtml(
+                          postUser?.name || "Unknown"
+                        )}</p>
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <h4 class="font-medium text-gray-900 mb-3">Comments (${
+                          postComments.length
+                        })</h4>
+                        
+                        <div class="space-y-2 mb-4">
+                            ${postComments
+                              .map(
+                                (comment) => `
+                                <div class="bg-gray-50 p-3 rounded">
+                                    <p class="text-sm text-gray-700">${escapeHtml(
+                                      comment.body
+                                    )}</p>
+                                </div>
+                            `
+                              )
+                              .join("")}
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <input type="text" placeholder="Add a comment..." 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   id="comment-input-${post.id}">
+                            <button onclick="addComment('${post.id}')" 
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm transition-colors ${
+                                      !isOnline
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : ""
+                                    }" 
+                                    ${!isOnline ? "disabled" : ""}>
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                `;
+          postsContainer.appendChild(postElement);
+        });
+      }
+
+      // Fungsi untuk menambah komentar (Global)
+      window.addComment = function (postId) {
+        const input = document.getElementById(`comment-input-${postId}`);
+        const commentText = input.value.trim();
+
+        if (commentText) {
+          handleAddComment(postId, commentText);
+          input.value = "";
+        }
+      };
+
+      // Fungsi Helper UI
+      function showLoginForm() {
+        loginForm.classList.remove("hidden");
+        mainContent.classList.add("hidden");
+        userInfo.classList.add("hidden");
+        // Menampilkan form login
+      }
+
+      function showMainContent() {
+        loginForm.classList.add("hidden");
+        mainContent.classList.remove("hidden");
+        userInfo.classList.remove("hidden");
+        welcomeText.textContent = `Selamat datang, ${currentUser.name}`;
+        loadPosts();
+        // Menampilkan konten utama
+      }
+
+      function showLoading(show) {
+        if (show) {
+          loadingSpinner.classList.remove("hidden");
+        } else {
+          loadingSpinner.classList.add("hidden");
+        }
+        // Membuka/menutup loading spinner
+      }
+
+      function updateConnectionStatus() {
+        if (isOnline) {
+          connectionStatus.classList.add("hidden");
+          // Menyembunyikan informasi status koneksi
+          // Mengaktifkan tombol tambah post dan komentar
+          const addPostBtn = document.getElementById("addPostBtn");
+          if (addPostBtn) {
+            addPostBtn.disabled = false;
+            addPostBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          }
+        } else {
+          connectionStatus.classList.remove("hidden");
+          // Menampilkan informasi status koneksi
+          // Menonaktifkan tombol tambah post dan komentar
+          const addPostBtn = document.getElementById("addPostBtn");
+          if (addPostBtn) {
+            addPostBtn.disabled = true;
+            addPostBtn.classList.add("opacity-50", "cursor-not-allowed");
+          }
+        }
+        // Mengupdate status koneksi
+      }
+
+      // Sinkronisasi data offline
+      function syncOfflineData() {
+        if (
+          "serviceWorker" in navigator &&
+          "sync" in window.ServiceWorkerRegistration.prototype
+        ) {
+          navigator.serviceWorker.ready.then((registration) => {
+            return registration.sync.register("background-sync");
+          });
+        }
+        // Sinkronisasi data offline dengan server
+      }
+
+      // Fungsi utilitas
+      function generateId() {
+        return Math.random().toString(36).substr(2, 9);
+        // Menggenerate ID acak
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+        // Mengkonversi string ke HTML
+      }
+    </script>
+  </body>
+</html>

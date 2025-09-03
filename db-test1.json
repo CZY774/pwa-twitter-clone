@@ -1,0 +1,86 @@
+{
+  "posts": [
+    {
+      "id": "1",
+      "title": "JSON Server Tutorial",
+      "userId": "2",
+      "content": "This is a great tool for mocking APIs."
+    },
+    {
+      "id": "2",
+      "title": "Understanding REST APIs",
+      "userId": "3",
+      "content": "A guide to the principles of RESTful architecture."
+    },
+    {
+      "id": "9f76",
+      "title": "Simple PWA Tutorial",
+      "content": "Introduction to PWA",
+      "userId": "1"
+    },
+    {
+      "id": "34dc",
+      "title": "Just Another PWA Tutorial",
+      "content": "Part 2 of Simple PWA Tutorial",
+      "userId": "1"
+    },
+    {
+      "id": "a57j7auwu",
+      "title": "Another Day Another PWA",
+      "content": "I am tired of this",
+      "userId": "1"
+    }
+  ],
+  "comments": [
+    {
+      "id": "1",
+      "body": "Excellent article!",
+      "postId": "1"
+    },
+    {
+      "id": "2",
+      "body": "Very informative.",
+      "postId": "2"
+    },
+    {
+      "id": "3",
+      "body": "Thank you for your tutorial.",
+      "postId": "1"
+    },
+    {
+      "id": "f987",
+      "postId": "9f76",
+      "body": "Looking forward for next chapter"
+    },
+    {
+      "id": "008sp1kh6",
+      "body": "Hello world",
+      "postId": "1"
+    },
+    {
+      "id": "usbemuih9",
+      "body": "Hai",
+      "postId": "1"
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "name": "Admin User",
+      "username": "admin",
+      "password": "admin"
+    },
+    {
+      "id": "2",
+      "name": "John Doe",
+      "username": "john",
+      "password": "passwordjohn"
+    },
+    {
+      "id": "3",
+      "name": "Jane Smith",
+      "username": "jane",
+      "password": "passwordjane"
+    }
+  ]
+}
