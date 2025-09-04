@@ -149,7 +149,7 @@
     </div>
 
     <!-- PWA Install Prompt -->
-    <div
+    <!-- <div
       id="installPrompt"
       class="fixed bottom-4 right-4 bg-blue-500 text-white p-4 rounded-lg shadow-lg hidden z-50"
     >
@@ -184,7 +184,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <script>
       // Status aplikasi
@@ -279,43 +279,43 @@
           deferredPrompt = e;
 
           // Menampilkan install prompt
-          document.getElementById("installPrompt").classList.remove("hidden");
+          // document.getElementById("installPrompt").classList.remove("hidden");
         });
 
         /**
          * Event listener untuk menghandle event click pada tombol install
          * @param {Event} e
          */
-        document
-          .getElementById("installBtn")
-          .addEventListener("click", async (e) => {
-            // Jika user mengklik tombol install maka akan menampilkan prompt install
-            if (deferredPrompt) {
-              // Menampilkan prompt install
-              deferredPrompt.prompt();
+        // document
+        //   .getElementById("installBtn")
+        //   .addEventListener("click", async (e) => {
+        //     // Jika user mengklik tombol install maka akan menampilkan prompt install
+        //     if (deferredPrompt) {
+        //       // Menampilkan prompt install
+        //       deferredPrompt.prompt();
 
-              // Menyimpan hasil prompt install di variable result
-              const result = await deferredPrompt.userChoice;
+        //       // Menyimpan hasil prompt install di variable result
+        //       const result = await deferredPrompt.userChoice;
 
-              // Menampilkan hasil prompt install di console
-              console.log("Install result:", result);
+        //       // Menampilkan hasil prompt install di console
+        //       console.log("Install result:", result);
 
-              // Menghapus event beforeinstallprompt yang tersimpan di variable deferredPrompt
-              deferredPrompt = null;
+        //       // Menghapus event beforeinstallprompt yang tersimpan di variable deferredPrompt
+        //       deferredPrompt = null;
 
-              // Menyembunyikan install prompt
-              document.getElementById("installPrompt").classList.add("hidden");
-            }
-          });
+        //       // Menyembunyikan install prompt
+        //       document.getElementById("installPrompt").classList.add("hidden");
+        //     }
+        //   });
 
         /**
          * Event listener untuk menghandle event click pada tombol dismiss
          * @param {Event} e
          */
-        document.getElementById("dismissBtn").addEventListener("click", (e) => {
-          // Menyembunyikan install prompt
-          document.getElementById("installPrompt").classList.add("hidden");
-        });
+        // document.getElementById("dismissBtn").addEventListener("click", (e) => {
+        //   // Menyembunyikan install prompt
+        //   document.getElementById("installPrompt").classList.add("hidden");
+        // });
       }
 
       // Pengaturan Event Listeners
